@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-android:
@@ -40,10 +40,21 @@ jobs:
           file build/CastleDefender.apk
           ls -lh build/CastleDefender.apk
 
-      - name: Upload installable APK
+      - name: Upload installable APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: Castle-Defender-Android-APK
           path: build/CastleDefender.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish latest APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Castle Defender Android APK
+          body: Automatically built Android APK. Signed with a debug key for direct installation.
+          files: build/CastleDefender.apk
+          make_latest: true
+          fail_on_unmatched_files: true
+          overwrite_files: true
