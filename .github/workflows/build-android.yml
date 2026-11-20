@@ -1,0 +1,49 @@
+name: Build Castle Defender APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Android debug signing key
+        run: |
+          mkdir -p "$HOME/.android"
+          keytool -genkeypair -v \
+            -keystore "$GITHUB_WORKSPACE/debug.keystore" \
+            -storepass android -alias androiddebugkey -keypass android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Import and validate project
+        run: godot --headless --editor --path . --quit
+
+      - name: Export Android APK
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-debug "Android" build/CastleDefender.apk
+
+      - name: Verify APK
+        run: |
+          test -s build/CastleDefender.apk
+          file build/CastleDefender.apk
+          ls -lh build/CastleDefender.apk
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Castle-Defender-Android-APK
+          path: build/CastleDefender.apk
+          if-no-files-found: error
+          retention-days: 30
