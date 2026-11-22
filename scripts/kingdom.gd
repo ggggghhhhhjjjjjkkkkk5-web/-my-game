@@ -75,18 +75,18 @@ func _process(delta: float) -> void:
 					_fire_projectile(b.node.position + Vector3(0, 1.7, 0), target)
 					b.cooldown = 0.9
 	for p in projectiles:
-		if not is_instance_valid(p.node) or not is_instance_valid(p.target):
+		if not is_instance_valid(p.node) or not is_instance_valid(p.target.node):
 			if is_instance_valid(p.node):
 				p.node.queue_free()
 			p.node = null
 			continue
-		var direction: Vector3 = p.target.position + Vector3(0, 0.65, 0) - p.node.position
+		var direction: Vector3 = p.target.node.position + Vector3(0, 0.65, 0) - p.node.position
 		if direction.length() < 0.35:
 			p.target.hp = int(p.target.hp) - int(p.damage)
 			p.node.queue_free()
 			p.node = null
 			if int(p.target.hp) <= 0:
-				_kill_enemy(p.target)
+				_kill_enemy(p.target.node)
 		else:
 			p.node.position += direction.normalized() * 13.0 * delta
 	projectiles = projectiles.filter(func(p): return is_instance_valid(p.node))
@@ -426,7 +426,7 @@ func _nearest_enemy(from: Vector3):
 func _fire_projectile(from: Vector3, target: Dictionary) -> void:
 	var orb := _mesh_node(SphereMesh.new(), from, _mat("#ffe17a"))
 	orb.scale = Vector3(0.16, 0.16, 0.16)
-	projectiles.append({"node":orb, "target":target.node, "damage":18})
+	projectiles.append({"node":orb, "target":target, "damage":18})
 
 func _kill_enemy(target: Node3D) -> void:
 	for e in enemies:
