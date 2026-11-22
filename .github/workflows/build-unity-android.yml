@@ -1,0 +1,35 @@
+name: Build Unity Tycoon Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'UnityTycoon/**'
+      - '.github/workflows/build-unity-android.yml'
+
+jobs:
+  build:
+    name: Build Unity Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: UnityTycoon
+          unityVersion: 2022.3.62f1
+          targetPlatform: Android
+          buildMethod: TycoonAndroidBuild.BuildAndroid
+          allowDirtyBuild: true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShahrakSaz-Android-APK
+          path: UnityTycoon/Builds/Android/ShahrakSaz.apk
+          if-no-files-found: error
+          retention-days: 30
