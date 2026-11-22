@@ -376,7 +376,11 @@ func _place_building(kind: String, pos: Vector3) -> void:
 			crop.scale = Vector3(0.12, 0.65, 0.12)
 	elif kind == "tower":
 		_mesh_node_for(node, CylinderMesh.new(), Vector3(0, 1.35, 0), _mat("#d2d5d8")).scale = Vector3(0.75, 1.2, 0.75)
-		_mesh_node_for(node, ConeMesh.new(), Vector3(0, 2.2, 0), _mat("#c35a48")).scale = Vector3(0.9, 0.7, 0.9)
+		var roof_mesh := CylinderMesh.new()
+		roof_mesh.top_radius = 0.0
+		roof_mesh.bottom_radius = 0.72
+		roof_mesh.height = 1.0
+		_mesh_node_for(node, roof_mesh, Vector3(0, 2.0, 0), _mat("#c35a48"))
 	elif kind == "barracks":
 		_mesh_node_for(node, BoxMesh.new(), Vector3(0, 1.15, 0), _mat("#c8a276")).scale = Vector3(1.35, 0.8, 1.2)
 		_mesh_node_for(node, PrismMesh.new(), Vector3(0, 1.8, 0), _mat("#a84f3f")).scale = Vector3(1.1, 0.7, 1.0)
