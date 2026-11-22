@@ -22,6 +22,7 @@ var wave_label: Label
 var hp_bar: ProgressBar
 var message_label: Label
 var spawn_clock := 0.0
+var pending_spawns := 0
 var income_clock := 0.0
 var wave_active := false
 var game_finished := false
@@ -90,7 +91,7 @@ func _process(delta: float) -> void:
 			p.node.position += direction.normalized() * 13.0 * delta
 	projectiles = projectiles.filter(func(p): return is_instance_valid(p.node))
 	enemies = enemies.filter(func(e): return is_instance_valid(e.node))
-	if wave_active and enemies.is_empty() and spawn_clock < 0.0:
+	if wave_active and enemies.is_empty() and pending_spawns == 0:
 		wave_active = false
 		coins += 35 + wave * 5
 		wood += 15
@@ -234,7 +235,9 @@ func _build_ui() -> void:
 	panel.color = Color(0.08, 0.12, 0.17, 0.88)
 	panel.anchor_left = 0
 	panel.anchor_right = 1
-	panel.offset_bottom = 76
+	panel.anchor_top = 1
+	panel.offset_top = -82
+	panel.offset_bottom = 0
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.add_child(panel)
 	var top := ColorRect.new()
@@ -392,6 +395,7 @@ func _start_wave() -> void:
 	wave_active = true
 	spawn_clock = 0.0
 	var count := 4 + wave * 2
+	pending_spawns = count
 	for i in range(count):
 		var timer := get_tree().create_timer(float(i) * 1.25)
 		timer.timeout.connect(func(): _spawn_enemy() if wave_active and not game_finished else null)
@@ -399,6 +403,7 @@ func _start_wave() -> void:
 	_update_ui()
 
 func _spawn_enemy() -> void:
+	pending_spawns = maxi(0, pending_spawns - 1)
 	var root := Node3D.new()
 	root.position = Vector3(rng.randf_range(-1.2, 1.2), 0, 7.2)
 	add_child(root)
