@@ -1,20 +1,20 @@
 config_version=5
 
 [application]
-config/name="قلعه‌بان"
+config/name="پادشاهی کوچک"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
-config/description="A mobile-friendly 2D castle defense game"
+config/description="A colorful 3D castle building and strategy game for Android"
 
 [display]
-window/size/viewport_width=960
-window/size/viewport_height=540
-window/size/window_width_override=960
-window/size/window_height_override=540
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/handheld/orientation=0
 
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/default_filters/use_nearest_mipmap_filter=false
+textures/default_filters/use_nearest_mipmap_filter=true

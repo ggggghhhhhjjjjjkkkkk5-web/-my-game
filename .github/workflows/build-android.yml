@@ -1,4 +1,4 @@
-name: Build Castle Defender APK
+name: Build Little Kingdom Android APK
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-android:
@@ -16,45 +16,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Create Android debug signing key
         run: |
           mkdir -p "$HOME/.android"
-          keytool -genkeypair -v \
-            -keystore "$GITHUB_WORKSPACE/debug.keystore" \
-            -storepass android -alias androiddebugkey -keypass android \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
-
-      - name: Import and validate project
+          keytool -genkeypair -v -keystore "$GITHUB_WORKSPACE/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - name: Validate Godot project
         run: godot --headless --editor --path . --quit
-
       - name: Export Android APK
         run: |
           mkdir -p build
-          godot --headless --path . --export-debug "Android" build/CastleDefender.apk
-
-      - name: Verify APK
-        run: |
-          test -s build/CastleDefender.apk
-          file build/CastleDefender.apk
-          ls -lh build/CastleDefender.apk
-
-      - name: Upload installable APK artifact
+          godot --headless --path . --export-debug "Android" build/LittleKingdom.apk
+          test -s build/LittleKingdom.apk
+          file build/LittleKingdom.apk
+          ls -lh build/LittleKingdom.apk
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Castle-Defender-Android-APK
-          path: build/CastleDefender.apk
+          name: Little-Kingdom-Android-APK
+          path: build/LittleKingdom.apk
           if-no-files-found: error
           retention-days: 30
-
-      - name: Publish latest APK release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: android-latest
-          name: Castle Defender Android APK
-          body: Automatically built Android APK. Signed with a debug key for direct installation.
-          files: build/CastleDefender.apk
-          make_latest: true
-          fail_on_unmatched_files: true
-          overwrite_files: true
