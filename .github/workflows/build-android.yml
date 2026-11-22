@@ -11,24 +11,50 @@ permissions:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.3
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android packages
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          yes | sdkmanager --licenses
+
+      - name: Download Godot 4.3 and export templates
+        run: |
+          mkdir -p "$RUNNER_TEMP/godot" "$HOME/.local/share/godot/export_templates/4.3.stable"
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip -O "$RUNNER_TEMP/godot/godot.zip"
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -O "$RUNNER_TEMP/godot/templates.tpz"
+          unzip -q "$RUNNER_TEMP/godot/godot.zip" -d "$RUNNER_TEMP/godot"
+          unzip -q "$RUNNER_TEMP/godot/templates.tpz" -d "$RUNNER_TEMP/godot/templates"
+          cp "$RUNNER_TEMP/godot/templates/templates/"* "$HOME/.local/share/godot/export_templates/4.3.stable/"
+          chmod +x "$RUNNER_TEMP/godot/Godot_v4.3-stable_linux.x86_64"
+          echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
+
       - name: Create Android debug signing key
         run: |
-          mkdir -p "$HOME/.android"
           keytool -genkeypair -v -keystore "$GITHUB_WORKSPACE/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
       - name: Validate Godot project
-        run: godot --headless --editor --path . --quit
+        run: Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --quit
+
       - name: Export Android APK
         run: |
           mkdir -p build
-          godot --headless --path . --export-debug "Android" build/LittleKingdom.apk
+          Godot_v4.3-stable_linux.x86_64 --headless --path . --export-debug "Android" build/LittleKingdom.apk
           test -s build/LittleKingdom.apk
           file build/LittleKingdom.apk
           ls -lh build/LittleKingdom.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
